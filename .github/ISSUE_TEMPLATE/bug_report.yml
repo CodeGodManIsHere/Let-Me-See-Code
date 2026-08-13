@@ -1,0 +1,73 @@
+name: Bug report
+description: Report a reproducible problem with capture, output, or the interface
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Let Me See Code. Remove private information before submitting logs or archive files.
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      placeholder: 2.2.16
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Chrome and operating system
+      placeholder: Chrome 140 on Windows 11
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Capture mode
+      options:
+        - Quick
+        - Fast
+        - Max
+        - Interface or installation
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the actual result and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open …
+        2. Select …
+        3. Start capture …
+    validations:
+      required: true
+  - type: textarea
+    id: settings
+    attributes:
+      label: Relevant settings
+      description: Include runtime, pages, link depth, response-body limit, deep nodes, and reload choice when relevant.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs or completeness information
+      description: Paste copied Logs, WARNINGS, or completeness details only after removing private data.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I tested the latest release.
+          required: true
+        - label: I removed passwords, tokens, cookies, private page content, and other sensitive data.
+          required: true
+

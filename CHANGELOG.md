@@ -14,7 +14,7 @@
 - Improved cancellation and failure cleanup so unfinished archive data is discarded, Chrome detaches cleanly, detailed diagnostics remain available, and the progress display disappears.
 - Made Unlimited Max extend optional-stage budgets to its remaining runtime rather than silently using ordinary finite limits. Unlimited remains protected by an internal 30-hour safety ceiling and configured page limit.
 - Preserved same-origin, HTML-route, redirect, token, action-query, and destructive-route safeguards during Max crawling.
-- Refreshed the repository documentation, v2.2.16 screenshots, privacy and security guidance, contribution instructions, issue forms, and automated validation workflow.
+- Refreshed the repository documentation, full interactive GitHub Pages product demo, privacy and security guidance, contribution instructions, issue forms, and automated validation workflow. The demo now uses real HAOQI and Hack the North capture specimens, a faithful popup simulation, an uncropped/full-screen evidence viewer, responsive glass navigation, and site-wide liquid-glass presentation.
 
 ## 2.2.15
 

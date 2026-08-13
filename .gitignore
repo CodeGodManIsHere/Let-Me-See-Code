@@ -1,0 +1,23 @@
+# Generated captures and release archives
+*.zip
+*.crx
+captures/
+outputs/
+benchmark-*/
+
+# Local browser and test state
+browser-profile*/
+*-profile/
+test-results/
+playwright-report/
+
+# Dependencies and logs
+node_modules/
+*.log
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+

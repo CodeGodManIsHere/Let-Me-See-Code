@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071018">
+    <meta name="description" content="Let Me See Code captures browser-exposed evidence for detailed website reconstruction and analysis.">
+    <meta property="og:title" content="Let Me See Code — See what the browser sees">
+    <meta property="og:description" content="A local Chrome extension for deep, reconstruction-ready website evidence.">
+    <meta property="og:image" content="https://codegodmanishere.github.io/Let-Me-See-Code/og.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://codegodmanishere.github.io/Let-Me-See-Code/">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Let Me See Code — See what the browser sees</title>
+    <link rel="icon" href="assets/icon-128.png">
+    <link rel="stylesheet" href="demo.css">
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="aurora aurora-a"></div>
+      <div class="aurora aurora-b"></div>
+      <div class="grid-plane"></div>
+      <div class="grain"></div>
+    </div>
+    <div class="light-probe" id="lightProbe" aria-hidden="true"></div>
+    <div class="scroll-progress" aria-hidden="true"><span id="scrollProgress"></span></div>
+
+    <header class="site-header glass" id="top">
+      <a class="site-brand" href="#top" aria-label="Let Me See Code home">
+        <img src="assets/icon-128.png" alt="">
+        <span>Let Me See <b>Code</b></span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#proof" data-section-link="proof">Proof</a>
+        <a href="#evidence" data-section-link="evidence">Evidence</a>
+        <a href="#modes" data-section-link="modes">Modes</a>
+        <a href="#privacy" data-section-link="privacy">Privacy</a>
+      </nav>
+      <a class="nav-download glass-button" href="https://github.com/CodeGodManIsHere/Let-Me-See-Code/releases/latest">Get v2.2.16 <span>↗</span></a>
+    </header>
+
+    <nav class="mobile-dock glass" aria-label="Mobile navigation">
+      <a href="#proof" data-section-link="proof"><i>01</i><span>Proof</span></a>
+      <a href="#evidence" data-section-link="evidence"><i>02</i><span>Evidence</span></a>
+      <a href="#modes" data-section-link="modes"><i>03</i><span>Modes</span></a>
+      <a href="#privacy" data-section-link="privacy"><i>04</i><span>Privacy</span></a>
+    </nav>
+
+    <main>
+      <section class="hero section-shell" aria-labelledby="heroTitle">
+        <div class="hero-copy reveal">
+          <div class="eyebrow"><i></i><span>LOCAL BROWSER EVIDENCE · MANIFEST V3</span></div>
+          <h1 id="heroTitle">See what the<br><em>browser sees.</em></h1>
+          <p>Capture the rendered page—not just its source. Let Me See Code preserves DOM, styles, assets, runtime, network, motion, storage and reconstruction clues inside a private local archive.</p>
+          <div class="hero-actions">
+            <a class="primary-cta glass-button" href="https://github.com/CodeGodManIsHere/Let-Me-See-Code/releases/latest"><span>Download extension</span><b>↗</b></a>
+            <a class="secondary-cta" href="#live-demo"><span class="play-dot">▶</span> Try the full interface</a>
+          </div>
+          <div class="hero-signals" aria-label="Product qualities">
+            <span><i></i> Runs locally</span>
+            <span><i></i> Private by design</span>
+            <span><i></i> Reconstruction-ready</span>
+          </div>
+        </div>
+
+        <div class="hero-product reveal" id="live-demo">
+          <div class="capture-ghost ghost-haoqi glass" aria-hidden="true">
+            <img src="assets/captures/haoqi-home.png" alt="">
+            <span>8 pages preserved</span>
+          </div>
+          <div class="capture-ghost ghost-hack glass" aria-hidden="true">
+            <img src="assets/captures/hackthenorth-home.png" alt="">
+            <span>76 animations observed</span>
+          </div>
+          <div class="popup-halo" aria-hidden="true"></div>
+          <div class="popup-card glass" data-tilt>
+            <div class="popup-topline">
+              <span><i></i> FULL INTERACTIVE POPUP</span>
+              <div class="popup-tools"><button id="resetPopup" type="button">Reset</button><a href="popup-demo.html" target="_blank" rel="noreferrer">Open 1:1 ↗</a></div>
+            </div>
+            <div class="popup-viewport" id="popupViewport">
+              <iframe id="popupDemo" src="popup-demo.html" title="Interactive Let Me See Code extension popup" loading="eager"></iframe>
+            </div>
+          </div>
+          <p class="demo-boundary"><i></i> Exact v2.2.16 interface · sample activity · no Chrome permissions requested</p>
+        </div>
+      </section>
+
+      <section class="proof-ribbon section-shell reveal" aria-label="Real capture statistics">
+        <article class="glass stat-card"><span>FILES IN ONE MAX ARCHIVE</span><strong data-count="2621">2,621</strong><small>Hack the North</small></article>
+        <article class="glass stat-card"><span>NETWORK REQUESTS OBSERVED</span><strong data-count="1980">1,980</strong><small>With 1,924 bodies preserved</small></article>
+        <article class="glass stat-card"><span>SAME-ORIGIN ROUTES</span><strong data-count="8">8</strong><small>HAOQI capture</small></article>
+        <article class="glass stat-card"><span>MOTION DEFINITIONS</span><strong data-count="76">76</strong><small>Observed on one difficult page</small></article>
+      </section>
+
+      <section class="capture-proof section-shell" id="proof" aria-labelledby="proofTitle">
+        <div class="section-heading reveal">
+          <div><span class="section-number">01</span><span class="eyebrow-text">REAL CAPTURE SPECIMENS</span></div>
+          <h2 id="proofTitle">Not a promise.<br><em>Actual output.</em></h2>
+          <p>Explore visual evidence and measured archive facts taken directly from the two Max captures you provided.</p>
+        </div>
+
+        <div class="capture-lab glass reveal">
+          <div class="lab-toolbar">
+            <div class="capture-tabs" role="tablist" aria-label="Captured websites">
+              <button class="capture-tab active" type="button" role="tab" aria-selected="true" data-capture="haoqi"><span>HAOQI</span><small>8 routes · Max</small></button>
+              <button class="capture-tab" type="button" role="tab" aria-selected="false" data-capture="hack"><span>Hack the North</span><small>Motion-heavy · Max</small></button>
+            </div>
+            <div class="archive-state"><i></i><span>Archive verified</span></div>
+          </div>
+
+          <div class="lab-body">
+            <div class="visual-stage">
+              <div class="browser-bar glass">
+                <div><i></i><i></i><i></i></div>
+                <span id="captureUrl">https://haoqi.design/</span>
+                <b>● CAPTURED</b>
+              </div>
+              <div class="visual-window">
+                <img id="captureImage" src="assets/captures/haoqi-home.png" alt="Captured viewport of HAOQI Design">
+                <div class="scan-line" aria-hidden="true"></div>
+                <div class="visual-badge glass"><span id="visualLabel">Current viewport</span><b id="visualIndex">01 / 03</b></div>
+                <div class="visual-tools glass" aria-label="Visual display controls">
+                  <button class="active" id="fitVisual" type="button" aria-pressed="true">Fit</button>
+                  <button id="fillVisual" type="button" aria-pressed="false">Fill</button>
+                  <button id="expandVisual" type="button">Expand ↗</button>
+                </div>
+              </div>
+              <div class="frame-strip" id="frameStrip" aria-label="Captured visual states">
+                <button class="frame-button active" type="button" data-frame="0"><img src="assets/captures/haoqi-home.png" alt=""><span>Home</span></button>
+                <button class="frame-button" type="button" data-frame="1"><img src="assets/captures/haoqi-reunimos.png" alt=""><span>Route 02</span></button>
+                <button class="frame-button" type="button" data-frame="2"><img src="assets/captures/haoqi-inspire.png" alt=""><span>Route 03</span></button>
+              </div>
+            </div>
+
+            <aside class="capture-readout">
+              <div class="readout-head"><span id="captureName">HAOQI©2026</span><b>MAX</b></div>
+              <p id="captureDescription">A complete eight-route crawl with browser-exposed core evidence present for every primary page state.</p>
+              <dl id="captureMetrics">
+                <div><dt>Evidence files</dt><dd>1,088</dd></div>
+                <div><dt>Captured pages</dt><dd>8 / 8</dd></div>
+                <div><dt>Network requests</dt><dd>310</dd></div>
+                <div><dt>Response data</dt><dd>80.9 MB</dd></div>
+                <div><dt>Scripts observed</dt><dd>498</dd></div>
+                <div><dt>Wasm → WAT</dt><dd>8 modules</dd></div>
+              </dl>
+              <div class="completeness-meter">
+                <div><span>Browser-exposed core</span><b id="completenessValue">Complete</b></div>
+                <div class="meter-track"><span id="completenessBar" style="width:100%"></span></div>
+              </div>
+              <p class="source-note">Numbers and visuals are read from the supplied capture archives. They are not synthetic benchmark claims.</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="evidence-section section-shell" id="evidence" aria-labelledby="evidenceTitle">
+        <div class="section-heading compact reveal">
+          <div><span class="section-number">02</span><span class="eyebrow-text">ARCHIVE ANATOMY</span></div>
+          <h2 id="evidenceTitle">One archive.<br><em>Many layers of truth.</em></h2>
+          <p>Select an evidence family to see what a reconstruction workflow can use.</p>
+        </div>
+
+        <div class="evidence-explorer glass reveal">
+          <div class="evidence-nav" role="tablist" aria-label="Evidence families">
+            <button class="evidence-button active" type="button" role="tab" aria-selected="true" data-evidence="document"><i>01</i><span>Document & CSS<small>Rendered structure</small></span><b>↗</b></button>
+            <button class="evidence-button" type="button" role="tab" aria-selected="false" data-evidence="visual"><i>02</i><span>Visual states<small>Viewport + tiles</small></span><b>↗</b></button>
+            <button class="evidence-button" type="button" role="tab" aria-selected="false" data-evidence="motion"><i>03</i><span>Motion & media<small>Animation + audio</small></span><b>↗</b></button>
+            <button class="evidence-button" type="button" role="tab" aria-selected="false" data-evidence="network"><i>04</i><span>Network & assets<small>Requests + bodies</small></span><b>↗</b></button>
+            <button class="evidence-button" type="button" role="tab" aria-selected="false" data-evidence="runtime"><i>05</i><span>Runtime & storage<small>Scripts + state</small></span><b>↗</b></button>
+            <button class="evidence-button" type="button" role="tab" aria-selected="false" data-evidence="routes"><i>06</i><span>Routes & audit<small>Crawl + completeness</small></span><b>↗</b></button>
+          </div>
+          <div class="evidence-display">
+            <div class="display-topbar"><span><i></i><i></i><i></i></span><b id="evidencePath">site/pages/000_home/reloaded/main_frame/</b><small>READ ONLY</small></div>
+            <div class="evidence-content">
+              <div class="file-tree" id="fileTree"></div>
+              <div class="data-preview">
+                <div class="preview-kicker" id="previewKicker">RENDERED DOCUMENT</div>
+                <h3 id="previewTitle">The page after the browser finished.</h3>
+                <p id="previewDescription">Element attributes, geometry, computed-style references, accessible structure, open shadow roots and readable stylesheet rules.</p>
+                <pre id="dataPreview" aria-label="Example evidence data"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="modes-section section-shell" id="modes" aria-labelledby="modesTitle">
+        <div class="section-heading compact reveal">
+          <div><span class="section-number">03</span><span class="eyebrow-text">THREE LEVELS OF DEPTH</span></div>
+          <h2 id="modesTitle">Choose the question.<br><em>Then choose the depth.</em></h2>
+        </div>
+
+        <div class="mode-composer glass reveal">
+          <div class="mode-selector" role="tablist" aria-label="Capture modes">
+            <button class="site-mode" type="button" role="tab" aria-selected="false" data-mode="quick"><span>Quick</span><small>Current state</small></button>
+            <button class="site-mode active" type="button" role="tab" aria-selected="true" data-mode="fast"><span>Fast</span><small>Deep page</small></button>
+            <button class="site-mode" type="button" role="tab" aria-selected="false" data-mode="max"><span>Max</span><small>Full site</small></button>
+          </div>
+          <div class="mode-detail">
+            <div class="mode-orb" aria-hidden="true"><span id="modeGlyph">F</span></div>
+            <div class="mode-copy">
+              <span id="modeKicker">FAST · DEEP</span>
+              <h3 id="modeTitle">One page, deeply understood.</h3>
+              <p id="modeDescription">Preserves the live state, reloads once for network evidence, then collects runtime, storage, motion and reconstruction intelligence within bounded stages.</p>
+              <div class="mode-tags" id="modeTags"><span>DOM + styles</span><span>Network bodies</span><span>Runtime</span><span>Motion</span></div>
+            </div>
+            <dl class="mode-facts" id="modeFacts"><div><dt>Scope</dt><dd>1 page</dd></div><div><dt>Reload</dt><dd>Once</dd></div><div><dt>Best for</dt><dd>Deep analysis</dd></div></dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="privacy-section section-shell" id="privacy" aria-labelledby="privacyTitle">
+        <div class="privacy-panel glass reveal">
+          <div class="privacy-copy">
+            <span class="section-number">04</span>
+            <div class="privacy-icon" aria-hidden="true">⌁</div>
+            <h2 id="privacyTitle">Deep capture.<br><em>Clear boundaries.</em></h2>
+            <p>The archive stays on your device. Passwords, cookie values, authorization tokens, typed text, clipboard contents and secret request fields are excluded or redacted.</p>
+            <a href="https://github.com/CodeGodManIsHere/Let-Me-See-Code/blob/main/PRIVACY.md">Read the privacy model <span>↗</span></a>
+          </div>
+          <div class="privacy-grid">
+            <article><i>01</i><strong>Local archive</strong><p>Evidence is assembled and downloaded inside your browser.</p></article>
+            <article><i>02</i><strong>Selected tab</strong><p>A run remains pinned to the tab chosen at the start.</p></article>
+            <article><i>03</i><strong>Secret redaction</strong><p>Known credentials and private values are never intentionally retained.</p></article>
+            <article><i>04</i><strong>Complete-page rule</strong><p>Max can stop early instead of exporting a corrupted partial page.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta section-shell reveal">
+        <div class="cta-glow" aria-hidden="true"></div>
+        <img src="assets/let-me-see-code.png" alt="Let Me See Code">
+        <span>THE TRUE TOOL FOR VIEWING SOURCE</span>
+        <h2>Bring the rendered web<br><em>back into view.</em></h2>
+        <p>Load it in Chrome, choose a page, choose a depth, and keep the evidence locally.</p>
+        <div class="hero-actions centered">
+          <a class="primary-cta glass-button" href="https://github.com/CodeGodManIsHere/Let-Me-See-Code/releases/latest"><span>Download v2.2.16</span><b>↗</b></a>
+          <a class="secondary-cta" href="https://github.com/CodeGodManIsHere/Let-Me-See-Code">View source on GitHub</a>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="visual-dialog" id="visualDialog" aria-labelledby="dialogTitle">
+      <div class="dialog-shell glass">
+        <header>
+          <div><span>CAPTURED VISUAL</span><h2 id="dialogTitle">HAOQI©2026 · Current viewport</h2></div>
+          <button id="closeVisual" type="button" aria-label="Close expanded visual">×</button>
+        </header>
+        <div class="dialog-image-wrap"><img id="dialogImage" src="assets/captures/haoqi-home.png" alt="Expanded captured website visual"></div>
+        <footer><button id="previousVisual" type="button">← Previous</button><span id="dialogCounter">01 / 03</span><button id="nextVisual" type="button">Next →</button></footer>
+      </div>
+    </dialog>
+
+    <footer class="site-footer section-shell">
+      <a class="site-brand" href="#top"><img src="assets/icon-128.png" alt=""><span>Let Me See <b>Code</b></span></a>
+      <p>Created by Aditya Mittal · The true tool for viewing source</p>
+      <div><a href="https://github.com/CodeGodManIsHere/Let-Me-See-Code">Repository</a><a href="https://github.com/CodeGodManIsHere/Let-Me-See-Code/releases">Releases</a><a href="https://github.com/CodeGodManIsHere/Let-Me-See-Code/blob/main/PRIVACY.md">Privacy</a></div>
+    </footer>
+
+    <script src="demo.js"></script>
+  </body>
+</html>

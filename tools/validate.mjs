@@ -11,7 +11,13 @@ const required = [
   'vendor/astring.mjs', 'vendor/astring.LICENSE', 'vendor/wabt.js', 'vendor/wabt.LICENSE',
   'README.md', 'PRIVACY.md', 'SECURITY.md', 'CONTRIBUTING.md', 'CHANGELOG.md', 'LICENSE',
   '.github/workflows/validate.yml', '.github/ISSUE_TEMPLATE/bug_report.yml',
-  '.github/ISSUE_TEMPLATE/feature_request.yml', 'assets/let-me-see-code.png',
+  '.github/ISSUE_TEMPLATE/feature_request.yml', 'docs/index.html', 'docs/demo.css',
+  'docs/demo.js', 'docs/popup-demo.html', 'docs/popup-demo.css', 'docs/popup-demo.js',
+  'docs/og.png', 'docs/.nojekyll', 'docs/assets/icon-128.png', 'docs/assets/let-me-see-code.png',
+  'docs/assets/captures/haoqi-home.png', 'docs/assets/captures/haoqi-reunimos.png',
+  'docs/assets/captures/haoqi-inspire.png', 'docs/assets/captures/hackthenorth-home.png',
+  'docs/assets/captures/hackthenorth-motion-0.png', 'docs/assets/captures/hackthenorth-motion-2.png',
+  'assets/let-me-see-code.png',
   'assets/icon-16.png', 'assets/icon-32.png', 'assets/icon-48.png', 'assets/icon-128.png',
   'tools/selftest.mjs'
 ];
