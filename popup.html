@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Let Me See Code</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <canvas id="particleCanvas" aria-hidden="true"></canvas>
+      <header class="app-header">
+        <div class="brand-lockup">
+          <button class="logo-button logo-button-header" type="button" aria-label="Start the Let Me See Code pixel trail">
+            <img class="brand-icon" src="assets/icon-128.png" alt="">
+          </button>
+          <div>
+            <h1>Let Me See <span>Code</span></h1>
+            <p>Browser evidence capture</p>
+          </div>
+        </div>
+        <span class="version">2.2.16</span>
+      </header>
+
+      <nav class="tabs" aria-label="Extension sections">
+        <button class="tab active" type="button" data-tab="capture">Capture</button>
+        <button class="tab" type="button" data-tab="settings">Settings</button>
+        <button class="tab" type="button" data-tab="logs">Logs <span id="logCount">0</span></button>
+        <button class="tab" type="button" data-tab="about">About</button>
+      </nav>
+
+      <div class="panel-stage">
+        <section class="tab-panel active" id="capturePanel">
+          <div class="target-strip" id="targetStrip" hidden><i></i><span id="targetStatus"></span></div>
+
+          <section class="mode-picker" aria-label="Capture mode">
+            <label class="mode-card" data-mode="quick">
+              <input type="radio" name="captureMode" value="quick">
+              <span class="mode-heading"><strong>Quick</strong><i>LIGHT</i></span>
+              <small>Current visual, DOM and computed styles.</small>
+              <span class="mode-foot"><b>Instant</b><em>1 page</em></span>
+            </label>
+            <label class="mode-card selected" data-mode="max">
+              <input type="radio" name="captureMode" value="max" checked>
+              <span class="mode-heading"><strong>Fast</strong><i>DEEP</i></span>
+              <small>One page with full runtime and network evidence.</small>
+              <span class="mode-foot"><b>Bounded</b><em>1 page</em></span>
+            </label>
+            <label class="mode-card" data-mode="entire">
+              <input type="radio" name="captureMode" value="entire">
+              <span class="mode-heading"><strong>Max</strong><i>SITE</i></span>
+              <small>Full-depth capture across same-origin pages.</small>
+              <span class="mode-foot"><b id="maxRuntimeHint">20m cap</b><em id="maxPageHint">8 pages</em></span>
+            </label>
+          </section>
+
+          <div class="mode-profile" aria-live="polite">
+            <span><i aria-hidden="true"></i><b id="profileTone">Bounded deep capture</b></span>
+            <small id="profileScope">One page · runtime + network</small>
+          </div>
+
+          <label class="inline-toggle" id="reloadRow">
+            <input id="reloadForNetwork" type="checkbox" checked><i aria-hidden="true"></i>
+            <span><strong>Reload for network evidence</strong><small>Preserves the live state first.</small></span>
+          </label>
+
+          <div class="mode-notice" id="reloadNotice">The live page is saved before a single network reload.</div>
+
+          <div class="action-row">
+            <button id="captureButton" class="primary-button" type="button">
+              <span><b id="captureButtonTitle">Capture Fast</b><small id="captureButtonSub">Deep single-page evidence</small></span>
+              <span class="button-arrow" aria-hidden="true">→</span>
+            </button>
+            <button id="pauseButton" class="pause-button" type="button" hidden><b aria-hidden="true">Ⅱ</b><span>Pause</span></button>
+            <button id="cancelButton" class="cancel-button" type="button" hidden><span>Cancel</span><b>×</b></button>
+          </div>
+
+          <section class="progress-shell" id="progressShell" hidden aria-live="polite">
+            <div class="progress-copy"><span id="statusText">Preparing…</span></div>
+            <div class="progress-track"><span id="progressBar"></span></div>
+            <div class="progress-meta"><span class="progress-facts"><b id="elapsedValue">0s elapsed</b><b id="pageValue" hidden></b></span><strong id="progressValue">0%</strong></div>
+          </section>
+
+          <div class="result" id="result" hidden></div>
+          <div class="capture-guidance"><i aria-hidden="true"></i><span>Safe to switch tabs or windows. Avoid interacting with the captured page while a run is active</span></div>
+        </section>
+
+        <section class="tab-panel" id="settingsPanel" hidden>
+          <div class="priority-settings">
+            <label class="setting-tile priority-tile" for="maxRuntimeMinutes"><span>Max runtime<small>Max mode only</small></span><span class="select-wrap"><select id="maxRuntimeMinutes"><option value="10">10 min</option><option value="20" selected>20 min</option><option value="30">30 min</option><option value="60">60 min</option><option value="0">Unlimited</option></select></span></label>
+            <label class="setting-tile priority-tile" for="maxPages"><span>Max pages<small>Same-origin crawl</small></span><span class="number-wrap"><input id="maxPages" type="number" min="2" max="50" value="8"><b>pages</b></span></label>
+          </div>
+          <div class="settings-grid">
+            <label class="setting-tile" for="settleSeconds"><span>Dynamic wait<small>After network idle</small></span><span class="number-wrap"><input id="settleSeconds" type="number" min="0" max="30" value="5"><b>s</b></span></label>
+            <label class="setting-tile" for="maxBodyMb"><span>Response body<small>Per response</small></span><span class="number-wrap"><input id="maxBodyMb" type="number" min="1" max="50" value="35"><b>MB</b></span></label>
+            <label class="setting-tile" for="maxDeepNodes"><span>Deep nodes<small>CSS + listeners</small></span><span class="number-wrap"><input id="maxDeepNodes" type="number" min="100" max="10000" step="100" value="3500"><b>nodes</b></span></label>
+            <label class="setting-tile" for="crawlDepth"><span>Link depth<small>Same-origin levels</small></span><span class="number-wrap"><input id="crawlDepth" type="number" min="1" max="4" value="2"><b>levels</b></span></label>
+            <label class="setting-tile toggle-tile"><span>Query routes<small>Keep URL parameters</small></span><input id="includeQueryStrings" type="checkbox"><i aria-hidden="true"></i></label>
+          </div>
+
+          <div class="section-heading compact-heading"><div><h2>Activity history</h2><p>Stored only inside this extension.</p></div></div>
+          <div class="settings-grid log-settings">
+            <label class="setting-tile toggle-tile"><span>Save logs<small>Progress history</small></span><input id="activityLogEnabled" type="checkbox" checked><i aria-hidden="true"></i></label>
+            <label class="setting-tile toggle-tile"><span>Timestamps<small>Local time</small></span><input id="activityLogTimestamps" type="checkbox" checked><i aria-hidden="true"></i></label>
+            <label class="setting-tile toggle-tile"><span>Open failures<small>Show Logs tab</small></span><input id="activityLogAutoOpenErrors" type="checkbox" checked><i aria-hidden="true"></i></label>
+            <div class="setting-tile retention-tile"><span>Retention<small>Complete newest runs</small></span><b class="retention-value">2 tasks</b></div>
+          </div>
+          <p class="safe-limit-note">Max may stop before either limit when another complete page cannot finish safely, preventing partial or corrupted page evidence</p>
+        </section>
+
+        <section class="tab-panel" id="logsPanel" hidden>
+          <div class="log-list" id="logList"><div class="empty-log">No capture activity yet.</div></div>
+          <div class="log-actions"><button type="button" id="copyLogs">Copy logs</button><button type="button" id="clearLogs" class="danger-button">Clear</button></div>
+        </section>
+
+        <section class="tab-panel" id="aboutPanel" hidden>
+          <div class="about-hero">
+            <button class="logo-button logo-button-about" type="button" aria-label="Start the Let Me See Code pixel trail">
+              <img src="assets/let-me-see-code.png" alt="Let Me See Code logo">
+            </button>
+            <span class="about-kicker">LET ME SEE CODE · 2.2.16</span>
+            <h2>See what the browser sees.</h2>
+            <p>A local, browser-exposed evidence capture built for detailed reconstruction and analysis.</p>
+          </div>
+          <div class="about-card">
+            <span>Created by</span><strong>Aditya Mittal</strong>
+            <a href="https://github.com/CodeGodManIsHere" target="_blank" rel="noreferrer">github.com/CodeGodManIsHere <b>↗</b></a>
+          </div>
+          <p class="browser-note">Chrome displays its standard debugging banner while a capture is active. The banner may mention the browser, but this extension remains pinned to the tab selected at start.</p>
+          <a class="star-repo" href="https://github.com/CodeGodManIsHere/Let-Me-See-Code" target="_blank" rel="noreferrer"><span aria-hidden="true">★</span> Liked the extension? Star the repo</a>
+        </section>
+      </div>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

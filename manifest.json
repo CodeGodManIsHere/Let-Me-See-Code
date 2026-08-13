@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Let Me See Code",
+  "version": "2.2.16",
+  "description": "The true tool for viewing source.",
+  "minimum_chrome_version": "118",
+  "permissions": [
+    "activeTab",
+    "debugger",
+    "downloads",
+    "offscreen",
+    "scripting",
+    "storage",
+    "unlimitedStorage"
+  ],
+  "action": {
+    "default_title": "Let Me See Code",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "32": "assets/icon-32.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icon-16.png",
+    "32": "assets/icon-32.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "background": {
+    "service_worker": "service_worker.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}
