@@ -1,0 +1,66 @@
+name: Build ForceKeyboardDismiss dylib
+
+on:
+  push:
+    branches:
+      - force-keyboard-dismiss-build
+    paths:
+      - "ForceKeyboardDismiss/**"
+      - ".github/workflows/build-force-keyboard-dismiss.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          set -euxo pipefail
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          xcrun --sdk iphoneos --find clang
+
+      - name: Build arm64 iOS dylib
+        run: |
+          set -euxo pipefail
+          mkdir -p build
+          xcrun --sdk iphoneos clang             -arch arm64             -miphoneos-version-min=15.0             -fobjc-arc             -fblocks             -O2             -fvisibility=hidden             -dynamiclib             ForceKeyboardDismiss/Build.m             -framework UIKit             -framework Foundation             -framework CoreGraphics             -install_name @rpath/ForceKeyboardDismiss.dylib             -Wl,-dead_strip             -o build/ForceKeyboardDismiss.dylib
+
+      - name: Ad-hoc sign
+        run: |
+          set -euxo pipefail
+          codesign --force --sign - --timestamp=none build/ForceKeyboardDismiss.dylib
+
+      - name: Validate binary
+        run: |
+          set -euxo pipefail
+          file build/ForceKeyboardDismiss.dylib
+          lipo -info build/ForceKeyboardDismiss.dylib
+          otool -hv build/ForceKeyboardDismiss.dylib
+          otool -l build/ForceKeyboardDismiss.dylib | sed -n '/LC_BUILD_VERSION/,+8p'
+          otool -L build/ForceKeyboardDismiss.dylib
+          codesign -dv --verbose=4 build/ForceKeyboardDismiss.dylib 2>&1
+          test "$(lipo -archs build/ForceKeyboardDismiss.dylib)" = "arm64"
+          test -s build/ForceKeyboardDismiss.dylib
+
+      - name: Prepare package
+        run: |
+          set -euxo pipefail
+          cp build/ForceKeyboardDismiss.dylib ForceKeyboardDismiss.dylib
+          shasum -a 256 ForceKeyboardDismiss.dylib > ForceKeyboardDismiss.sha256.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ForceKeyboardDismiss
+          path: |
+            ForceKeyboardDismiss.dylib
+            ForceKeyboardDismiss.sha256.txt
+          if-no-files-found: error
+          retention-days: 30
