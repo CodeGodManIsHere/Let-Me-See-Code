@@ -1,21 +1,107 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
+#import <dlfcn.h>
+#import <mach-o/dyld.h>
 
-static const void *FKDWindowMarkerKey = &FKDWindowMarkerKey;
+static volatile BOOL FKDKeyboardVisible = NO;
+static void (*FKDSDLStopTextInput)(void) = NULL;
 
-@interface FKDKeyboardDismissor : NSObject
+static void FKDResolveSDLStopTextInput(void) {
+    if (FKDSDLStopTextInput) return;
+
+    void *sym = dlsym(RTLD_DEFAULT, "SDL_StopTextInput");
+    if (sym) {
+        FKDSDLStopTextInput = (void (*)(void))sym;
+        return;
+    }
+
+    uint32_t count = _dyld_image_count();
+    for (uint32_t i = 0; i < count; i++) {
+        const char *name = _dyld_get_image_name(i);
+        if (!name) continue;
+
+        void *handle = dlopen(name, RTLD_LAZY | RTLD_NOLOAD);
+        if (!handle) continue;
+
+        sym = dlsym(handle, "SDL_StopTextInput");
+        dlclose(handle);
+
+        if (sym) {
+            FKDSDLStopTextInput = (void (*)(void))sym;
+            return;
+        }
+    }
+}
+
+static NSArray<UIWindow *> *FKDAllWindows(void) {
+    NSMutableOrderedSet<UIWindow *> *windows = [NSMutableOrderedSet orderedSet];
+    UIApplication *app = UIApplication.sharedApplication;
+
+    if (@available(iOS 13.0, *)) {
+        for (UIScene *scene in app.connectedScenes) {
+            if (![scene isKindOfClass:UIWindowScene.class]) continue;
+            UIWindowScene *windowScene = (UIWindowScene *)scene;
+            for (UIWindow *window in windowScene.windows) {
+                if (window) [windows addObject:window];
+            }
+        }
+    }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    for (UIWindow *window in app.windows) {
+        if (window) [windows addObject:window];
+    }
+#pragma clang diagnostic pop
+
+    return windows.array;
+}
+
+static void FKDForceDismissKeyboard(void) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        FKDResolveSDLStopTextInput();
+
+        void (^dismissOnce)(void) = ^{
+            if (FKDSDLStopTextInput) {
+                FKDSDLStopTextInput();
+            }
+
+            UIApplication *app = UIApplication.sharedApplication;
+
+            for (UIWindow *window in FKDAllWindows()) {
+                [window endEditing:YES];
+                [window.rootViewController.view endEditing:YES];
+            }
+
+            [app sendAction:@selector(resignFirstResponder)
+                         to:nil
+                       from:nil
+                   forEvent:nil];
+        };
+
+        dismissOnce();
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)),
+                       dispatch_get_main_queue(), dismissOnce);
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.18 * NSEC_PER_SEC)),
+                       dispatch_get_main_queue(), dismissOnce);
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.40 * NSEC_PER_SEC)),
+                       dispatch_get_main_queue(), dismissOnce);
+    });
+}
+
+@interface FKDKeyboardObserver : NSObject
 + (instancetype)shared;
-- (void)installOnCurrentWindows;
 @end
 
-@implementation FKDKeyboardDismissor
+@implementation FKDKeyboardObserver
 
 + (instancetype)shared {
-    static FKDKeyboardDismissor *instance;
+    static FKDKeyboardObserver *instance;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        instance = [FKDKeyboardDismissor new];
+        instance = [FKDKeyboardObserver new];
     });
     return instance;
 }
@@ -25,154 +111,108 @@ static const void *FKDWindowMarkerKey = &FKDWindowMarkerKey;
     if (!self) return nil;
 
     NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
-    [nc addObserver:self
-           selector:@selector(windowStateChanged:)
-               name:UIApplicationDidBecomeActiveNotification
-             object:nil];
-    [nc addObserver:self
-           selector:@selector(windowStateChanged:)
-               name:UIWindowDidBecomeVisibleNotification
-             object:nil];
 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self installOnCurrentWindows];
-    });
+    [nc addObserverForName:UIKeyboardWillShowNotification
+                    object:nil
+                     queue:NSOperationQueue.mainQueue
+                usingBlock:^(__unused NSNotification *note) {
+        FKDKeyboardVisible = YES;
+        FKDResolveSDLStopTextInput();
+    }];
+
+    [nc addObserverForName:UIKeyboardDidShowNotification
+                    object:nil
+                     queue:NSOperationQueue.mainQueue
+                usingBlock:^(__unused NSNotification *note) {
+        FKDKeyboardVisible = YES;
+        FKDResolveSDLStopTextInput();
+    }];
+
+    [nc addObserverForName:UIKeyboardDidHideNotification
+                    object:nil
+                     queue:NSOperationQueue.mainQueue
+                usingBlock:^(__unused NSNotification *note) {
+        FKDKeyboardVisible = NO;
+    }];
 
     return self;
 }
 
-- (void)windowStateChanged:(NSNotification *)notification {
-    (void)notification;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self installOnCurrentWindows];
-    });
-}
+@end
 
-- (NSArray<UIWindow *> *)allWindows {
-    NSMutableOrderedSet<UIWindow *> *result = [NSMutableOrderedSet orderedSet];
+@interface UIApplication (FKDKeyboardDismiss)
+- (void)fkd_sendEvent:(UIEvent *)event;
+@end
 
-    UIApplication *app = UIApplication.sharedApplication;
+@implementation UIApplication (FKDKeyboardDismiss)
 
-    if (@available(iOS 13.0, *)) {
-        for (UIScene *scene in app.connectedScenes) {
-            if (![scene isKindOfClass:UIWindowScene.class]) continue;
-            UIWindowScene *windowScene = (UIWindowScene *)scene;
-            for (UIWindow *window in windowScene.windows) {
-                if (window) [result addObject:window];
-            }
+- (void)fkd_sendEvent:(UIEvent *)event {
+    [self fkd_sendEvent:event];
+
+    if (event.type != UIEventTypeTouches) return;
+
+    NSSet<UITouch *> *touches = event.allTouches;
+    if (touches.count == 0) return;
+
+    NSUInteger endedDoubleTaps = 0;
+    BOOL topRightEndedTap = NO;
+
+    for (UITouch *touch in touches) {
+        if (touch.phase != UITouchPhaseEnded) continue;
+
+        if (touch.tapCount >= 2) {
+            endedDoubleTaps++;
+        }
+
+        UIWindow *window = touch.window;
+        if (!window) continue;
+
+        CGPoint p = [touch locationInView:window];
+        CGRect b = window.bounds;
+
+        if (!CGRectIsEmpty(b) &&
+            p.x >= CGRectGetWidth(b) * 0.78 &&
+            p.y <= CGRectGetHeight(b) * 0.25) {
+            topRightEndedTap = YES;
         }
     }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    for (UIWindow *window in app.windows) {
-        if (window) [result addObject:window];
+    // Invisible emergency trigger: two-finger double-tap anywhere.
+    if (touches.count >= 2 && endedDoubleTaps >= 2) {
+        FKDForceDismissKeyboard();
+        return;
     }
-#pragma clang diagnostic pop
 
-    return result.array;
-}
-
-- (void)forceDismissKeyboard {
-    void (^dismissBlock)(void) = ^{
-        UIApplication *app = UIApplication.sharedApplication;
-
-        for (UIWindow *window in [self allWindows]) {
-            [window endEditing:YES];
-            [window.rootViewController.view endEditing:YES];
-        }
-
-        [app sendAction:@selector(resignFirstResponder)
-                     to:nil
-                   from:nil
-               forEvent:nil];
-    };
-
-    dismissBlock();
-
-    // Retry briefly because LiveContainer/SDL can leave the software keyboard
-    // attached for a moment after Source hides the console.
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), dismissBlock);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.18 * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), dismissBlock);
-}
-
-- (void)consoleCornerTap:(UITapGestureRecognizer *)gesture {
-    if (gesture.state != UIGestureRecognizerStateEnded) return;
-
-    UIView *view = gesture.view;
-    if (!view) return;
-
-    CGPoint point = [gesture locationInView:view];
-    CGRect bounds = view.bounds;
-    if (CGRectIsEmpty(bounds)) return;
-
-    // Source's console close control is in the upper-right. This invisible
-    // helper lets the original tap continue while also forcing UIKit to
-    // release any stale keyboard first responder.
-    const CGFloat rightEdge = CGRectGetWidth(bounds) * 0.78;
-    const CGFloat topEdge = CGRectGetHeight(bounds) * 0.28;
-
-    if (point.x >= rightEdge && point.y <= topEdge) {
-        [self forceDismissKeyboard];
+    // Source Engine's VGUI console close button sits in the upper-right.
+    // Only act while the software keyboard is actually visible.
+    if (FKDKeyboardVisible && topRightEndedTap) {
+        FKDForceDismissKeyboard();
     }
-}
-
-- (void)emergencyDismissTap:(UITapGestureRecognizer *)gesture {
-    if (gesture.state == UIGestureRecognizerStateEnded) {
-        [self forceDismissKeyboard];
-    }
-}
-
-- (void)installOnWindow:(UIWindow *)window {
-    if (!window) return;
-    if (objc_getAssociatedObject(window, FKDWindowMarkerKey)) return;
-
-    objc_setAssociatedObject(window,
-                             FKDWindowMarkerKey,
-                             @YES,
-                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-
-    UITapGestureRecognizer *cornerTap =
-        [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                action:@selector(consoleCornerTap:)];
-    cornerTap.numberOfTouchesRequired = 1;
-    cornerTap.numberOfTapsRequired = 1;
-    cornerTap.cancelsTouchesInView = NO;
-    cornerTap.delaysTouchesBegan = NO;
-    cornerTap.delaysTouchesEnded = NO;
-    [window addGestureRecognizer:cornerTap];
-
-    // Invisible fallback: two-finger double-tap anywhere.
-    UITapGestureRecognizer *fallback =
-        [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                action:@selector(emergencyDismissTap:)];
-    fallback.numberOfTouchesRequired = 2;
-    fallback.numberOfTapsRequired = 2;
-    fallback.cancelsTouchesInView = NO;
-    fallback.delaysTouchesBegan = NO;
-    fallback.delaysTouchesEnded = NO;
-    [window addGestureRecognizer:fallback];
-}
-
-- (void)installOnCurrentWindows {
-    for (UIWindow *window in [self allWindows]) {
-        [self installOnWindow:window];
-    }
-}
-
-- (void)dealloc {
-    [NSNotificationCenter.defaultCenter removeObserver:self];
 }
 
 @end
 
+static void FKDInstallSendEventHook(void) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        Class cls = UIApplication.class;
+        Method original = class_getInstanceMethod(cls, @selector(sendEvent:));
+        Method replacement = class_getInstanceMethod(cls, @selector(fkd_sendEvent:));
+
+        if (original && replacement) {
+            method_exchangeImplementations(original, replacement);
+        }
+    });
+}
+
 __attribute__((constructor))
 static void ForceKeyboardDismissInit(void) {
     @autoreleasepool {
+        FKDInstallSendEventHook();
+
         dispatch_async(dispatch_get_main_queue(), ^{
-            (void)[FKDKeyboardDismissor shared];
+            (void)[FKDKeyboardObserver shared];
+            FKDResolveSDLStopTextInput();
         });
     }
 }
